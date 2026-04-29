@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النموذج (1) المطور - أ/ عبدالعزيز الفيفي</title>
+    <title>النموذج (1) - أ/ عبدالعزيز الفيفي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        :root { 
-            --maroon: #800000; --gold: #d4af37; --dark: #333; 
-            --bg: #fdfaf1; --white: #ffffff; --correct: #2e7d32; --wrong: #c62828;
-        }
+        :root { --maroon: #800000; --gold: #d4af37; --bg: #fdfaf1; --white: #ffffff; --correct: #2e7d32; --wrong: #c62828; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
         #protection-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: var(--gold); z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
         .quiz-card { background: var(--white); width: 100%; max-width: 950px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-top: 12px solid var(--maroon); padding: 35px; position: relative; }
@@ -27,9 +24,8 @@
         .feedback { margin-top: 20px; padding: 20px; border-radius: 12px; display: none; background: #fffde7; border-right: 8px solid var(--maroon); }
         .btn { background: var(--maroon); color: var(--gold); padding: 15px 45px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.3s; }
         .hidden { display: none !important; }
-        .log-item { padding: 15px; margin-bottom: 10px; border-radius: 10px; border-right: 10px solid; background: #fff; border: 1px solid #eee; position: relative; }
-        .ok { border-right-color: var(--correct); }
-        .no { border-right-color: var(--wrong); }
+        .input-group { margin-bottom: 15px; text-align: right; width: 80%; margin-left: auto; margin-right: auto; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--maroon); font-size: 1rem; outline: none; box-sizing: border-box; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -42,38 +38,46 @@
 <div class="quiz-card" id="main-app">
     <div class="quiz-header">
         <h3 id="sig" style="margin:0; color:var(--maroon);">أ / عبدالعزيز الفيفي - ثانوية الأمير عبدالمجيد</h3>
-        <h2 style="margin:10px 0;">النموذج (1) - أساسيات المهارات اللفظية</h2>
+        <h2 style="margin:10px 0;">النموذج (1) - المهارات اللفظية</h2>
     </div>
 
     <div id="start-page" style="text-align: center;">
-        <input type="text" id="nameInp" placeholder="سجل اسم المتدرب هنا..." style="width: 70%; padding: 15px; border-radius: 10px; border: 2px solid var(--maroon); text-align: center; font-size: 1.2rem; margin-bottom: 30px; outline: none;">
-        <br><button class="btn" onclick="init()">بدء التحدي ⮕</button>
+        <div class="input-group">
+            <input type="text" id="nameInp" placeholder="أدخل اسمك الثلاثي الحقيقي...">
+        </div>
+        <div class="input-group">
+            <select id="classInp">
+                <option value="">اختر الفصل...</option>
+                <option value="101">101</option>
+                <option value="102">102</option>
+                <option value="103">103</option>
+                <option value="104">104</option>
+            </select>
+        </div>
+        <br><button class="btn" onclick="init()">بدء الاختبار ⮕</button>
     </div>
 
     <div id="quiz-page" class="hidden">
         <div class="nav-bar">
-            <div>👤 المتدرب: <span id="user-name" style="color: var(--maroon); font-weight: bold;"></span></div>
+            <div>👤 <span id="user-display"></span> | الفصل: <span id="class-display"></span></div>
             <div class="q-num" id="q-info"></div>
             <div id="timer" class="timer-box">45</div>
         </div>
         <div id="q-content" class="q-text"></div>
         <div id="opts-box" class="options-grid"></div>
         <div id="fb-box" class="feedback">
-            <b id="fb-res" style="display: block; margin-bottom: 8px;"></b>
-            <div id="fb-logic" style="font-size: 1rem; color: #444;"></div>
+            <b id="fb-res"></b>
+            <div id="fb-logic" style="margin-top:5px; font-size:0.9rem;"></div>
         </div>
         <div style="text-align: center; margin-top: 30px;">
             <button id="next-btn" class="btn hidden" onclick="goNext()">السؤال التالي ⮕</button>
         </div>
     </div>
 
-    <div id="final-page" class="hidden">
-        <div style="text-align: center; background: var(--maroon); color: var(--gold); padding: 40px; border-radius: 20px;">
-            <h1 id="final-score" style="font-size: 4rem; margin: 0;"></h1>
-            <p id="final-msg" style="font-size: 1.3rem; color: white;"></p>
-        </div>
-        <h3 style="margin-top: 30px;">📊 مراجعة الأخطاء والحلول الاستراتيجية:</h3>
-        <div id="final-log"></div>
+    <div id="final-page" class="hidden" style="text-align: center;">
+        <h1 id="final-score" style="font-size: 4rem; color: var(--maroon);"></h1>
+        <p>تم حفظ نتيجتك بنجاح في لوحة تحكم أ/ عبدالعزيز الفيفي</p>
+        <button class="btn" onclick="location.reload()">خروج</button>
     </div>
 </div>
 
@@ -89,41 +93,28 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // 40 سؤالاً محكماً لغوياً ومنطقياً (التناظر، الخطأ السياقي، إكمال الجمل)
     const questions = [
-        // تناظر لفظي
-        { q: "رمل : زجاج", opts: ["قصب : سكر", "حديد : منجم", "شجر : غابة", "ماء : ثلج"], ans: "قصب : سكر", tip: "علاقة مادة خام وما يُصنع منها؛ الرمل يُصنع منه الزجاج والقصب يُصنع منه السكر.", cat: "تناظر" },
-        { q: "غرفة : فندق", opts: ["غصن : شجرة", "سيارة : محرك", "بحر : سمك", "طائرة : مطار"], ans: "غصن : شجرة", tip: "علاقة جزء من كل؛ الغرفة جزء من الفندق والغصن جزء من الشجرة.", cat: "تناظر" },
-        { q: "مدرج : طائرة", opts: ["طريق : سيارة", "بحر : سفينة", "سكة : قطار", "كل ما سبق"], ans: "سكة : قطار", tip: "علاقة مسار مخصص؛ الطائرة تمشي في المدرج والقطار يمشي على السكة (السيارة قد تمشي في غير الطريق).", cat: "تناظر" },
-        { q: "نوم : ليل", opts: ["صوم : رمضان", "مشي : رياضة", "سفر : طائرة", "دراسة : مدرسة"], ans: "صوم : رمضان", tip: "علاقة زمنية؛ النوم في الليل والصوم في رمضان.", cat: "تناظر" },
-        
-        // إكمال جمل
-        { q: "لا تجعل ........ عائقاً في طريقك، بل اجعلها ........ تصل به إلى القمة.", opts: ["الفشل - سلماً", "الصعوبات - حاجزاً", "النجاح - طريقاً", "الماضي - ذكرى"], ans: "الفشل - سلماً", tip: "سياق إيجابي؛ الفشل يحوّل لوسيلة (سلم) للنجاح.", cat: "إكمال جمل" },
-        { q: "من زاد حياؤه زاد ........ ، ومن قل حياؤه قل ........ الناس له.", opts: ["وقاره - احترام", "ماله - حب", "علمه - كره", "صبره - تقدير"], ans: "وقاره - احترام", tip: "علاقة طردية بين الحياء والوقار والاحترام.", cat: "إكمال جمل" },
-        { q: "أفضل وسيلة لـ ........ الوعود هي ألا ........ منذ البداية.", opts: ["إنجاز - تقطعها", "نشر - تخفيها", "حفظ - تعطيها", "فهم - تدرسها"], ans: "حفظ - تعطيها", tip: "حكمة؛ أفضل طريقة لحفظ الوعد هي الحذر في إعطائه.", cat: "إكمال جمل" },
-        
-        // خطأ سياقي
-        { q: "إنجازاتك الحالية هي نتاج أفكارك الفاشلة التي كنت تحملها في الماضي.", opts: ["إنجازاتك", "الحالية", "الفاشلة", "الماضي"], ans: "الفاشلة", tip: "خطأ سياقي؛ الإنجازات ناتجة عن أفكار (ناجحة) وليس فاشلة.", cat: "خطأ سياقي" },
-        { q: "المتفائل يرى فرصة في كل صعوبة، والمتطلع يرى صعوبة في كل فرصة.", opts: ["فرصة", "صعوبة", "المتطلع", "يرى"], ans: "المتطلع", tip: "خطأ سياقي؛ التصحيح هو (المتشائم) هو من يرى صعوبة في كل فرصة.", cat: "خطأ سياقي" },
-        { q: "العاقل من يقبض لسانه إلا عن خير، ويبسط يده إلا عن شر.", opts: ["يقبض", "لسانه", "يبسط", "شر"], ans: "شر", tip: "خطأ سياقي؛ التصحيح (إلا عن خير) أو (ويقبض يده عن شر).", cat: "خطأ سياقي" }
+        { q: "رئة : تنفس", opts: ["عين : رؤية", "قلب : ضخ", "أذن : سماع", "معدة : هضم"], ans: "قلب : ضخ", tip: "علاقة وظيفة؛ الرئة وظيفتها التنفس والقلب وظيفته الضخ." },
+        { q: "من غضب من لا شيء، رضي بـ ........", opts: ["شيء", "كل شيء", "لا شيء", "أقل شيء"], ans: "لا شيء", tip: "حكمة؛ من يغضب بلا سبب يرضى بلا عوض." },
+        { q: "العاقل من يتعظ بغيره، والجاهل من يتعظ بنفسه.", opts: ["العاقل", "يتعظ", "بغيره", "الجاهل"], ans: "الجاهل", tip: "خطأ سياقي؛ التصحيح: (الأحمق) هو من لا يتعظ إلا بنفسه." },
+        { q: "نحل : عسل", opts: ["بقر : حليب", "منجم : ذهب", "حقل : قمح", "فرن : خبز"], ans: "بقر : حليب", tip: "علاقة إنتاج؛ النحل ينتج العسل والبقر ينتج الحليب." },
+        { q: "الابتسامة كلمة ........ بلا حروف.", opts: ["جميلة", "صادقة", "صامتة", "واضحة"], ans: "جميلة", tip: "إكمال جمل؛ الابتسامة أجمل لغة تعبيرية." }
     ];
 
-    // تكرار الأسئلة لضمان وجود 40 سؤالاً مع الحفاظ على التنوع (يفضل إمدادي بمزيد من الأسئلة لاحقاً)
-    while(questions.length < 40) {
-        let original = questions[questions.length % 10];
-        questions.push({...original});
-    }
+    while(questions.length < 40) { questions.push({...questions[questions.length % 5]}); }
 
-    let current = 0, score = 0, timerObj, mixedPool = [], user = "", log = [];
+    let current = 0, score = 0, timerObj, mixedPool = [], user = "", classVal = "";
 
     function init() {
-        if(localStorage.getItem("done_model_1")) {
-            alert("عذراً يا بطل! لقد أديت هذا الاختبار مسبقاً. لا يسمح بالإعادة.");
-            return;
-        }
-        user = document.getElementById('nameInp').value;
-        if(!user.trim()) return alert("لطفاً، سجل اسم المتدرب.");
-        document.getElementById('user-name').innerText = user;
+        user = document.getElementById('nameInp').value.trim();
+        classVal = document.getElementById('classInp').value;
+
+        if (user.split(' ').length < 3) return alert("يرجى إدخال الاسم الثلاثي الحقيقي.");
+        if (!classVal) return alert("يرجى اختيار الفصل.");
+        if (localStorage.getItem("done_m1")) return alert("عذراً، أديت هذا الاختبار مسبقاً.");
+
+        document.getElementById('user-display').innerText = user;
+        document.getElementById('class-display').innerText = classVal;
         document.getElementById('start-page').classList.add('hidden');
         document.getElementById('quiz-page').classList.remove('hidden');
         mixedPool = questions.sort(() => Math.random() - 0.5);
@@ -141,8 +132,7 @@
         box.innerHTML = '';
         data.opts.sort(() => Math.random() - 0.5).forEach(o => {
             const div = document.createElement('div');
-            div.className = 'opt';
-            div.innerText = o;
+            div.className = 'opt'; div.innerText = o;
             div.onclick = () => check(o, div);
             box.appendChild(div);
         });
@@ -153,24 +143,20 @@
         clearInterval(timerObj);
         const data = mixedPool[current];
         const isOk = (sel === data.ans);
+        if(isOk) score++;
         document.querySelectorAll('.opt').forEach(b => {
             b.onclick = null;
             if(b.innerText === data.ans) b.classList.add('correct');
             else if(b.innerText === sel) b.classList.add('wrong');
         });
-        if(isOk) score++;
-        const fb = document.getElementById('fb-box');
-        fb.style.display = 'block';
-        document.getElementById('fb-res').innerText = isOk ? "إجابة دقيقة ✅" : "إجابة خاطئة ❌";
+        document.getElementById('fb-box').style.display = 'block';
+        document.getElementById('fb-res').innerText = isOk ? "✅ أحسنت" : "❌ خطأ";
         document.getElementById('fb-logic').innerText = data.tip;
         document.getElementById('next-btn').classList.remove('hidden');
-        log.push({q: data.q, ok: isOk, correct: data.ans, tip: data.tip});
     }
 
     function startT() {
-        let s = 45;
-        const t = document.getElementById('timer');
-        t.innerText = s;
+        let s = 45; const t = document.getElementById('timer'); t.innerText = s;
         timerObj = setInterval(() => {
             s--; t.innerText = s;
             if(s <= 0) { clearInterval(timerObj); check("N/A", null); }
@@ -183,25 +169,18 @@
         document.getElementById('quiz-page').classList.add('hidden');
         document.getElementById('final-page').classList.remove('hidden');
         document.getElementById('final-score').innerText = `${score} / 40`;
-        document.getElementById('final-msg').innerText = `انتهى التحدي يا ${user}! تم حفظ النتيجة.`;
         
-        localStorage.setItem("done_model_1", "true"); 
-
-        await db.collection("student_results").add({
-            name: user,
-            score: score,
-            total: 40,
-            model_id: "1",
-            time: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        const logBox = document.getElementById('final-log');
-        log.forEach((item, i) => {
-            const d = document.createElement('div');
-            d.className = `log-item ${item.ok?'ok':'no'}`;
-            d.innerHTML = `<strong>س${i+1}: ${item.q}</strong><br>الإجابة الصحيحة: ${item.correct}<br><small>💡 المنطق: ${item.tip}</small>`;
-            logBox.appendChild(d);
-        });
+        try {
+            await db.collection("student_results").add({
+                name: user,
+                student_class: classVal,
+                score: score,
+                total: 40,
+                model_id: "1", 
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            localStorage.setItem("done_m1", "true");
+        } catch (e) { console.error(e); }
     }
 </script>
 </body>
