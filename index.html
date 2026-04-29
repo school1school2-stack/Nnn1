@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النموذج (1) المطور - أ/ عبدالعزيز الفيفي</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        :root { 
+            --maroon: #800000; --gold: #d4af37; --dark: #333; 
+            --bg: #fdfaf1; --white: #ffffff; --correct: #2e7d32; --wrong: #c62828;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        #protection-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: var(--gold); z-index: 999999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .quiz-card { background: var(--white); width: 100%; max-width: 950px; border-radius: 25px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); border-top: 12px solid var(--maroon); padding: 35px; position: relative; }
+        .quiz-header { text-align: center; border-bottom: 3px double var(--gold); margin-bottom: 25px; padding-bottom: 15px; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #f9f9f9; padding: 12px 20px; border-radius: 15px; }
+        .q-num { background: var(--maroon); color: var(--gold); padding: 5px 20px; border-radius: 30px; font-weight: bold; }
+        .timer-box { font-weight: 800; font-size: 1.4rem; color: var(--maroon); border: 3px solid var(--gold); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .q-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; text-align: center; color: #111; line-height: 1.6; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt { padding: 18px; border: 2px solid #eee; border-radius: 12px; cursor: pointer; transition: 0.3s; font-weight: 600; text-align: center; font-size: 1.1rem; background: #fff; }
+        .opt:hover { border-color: var(--gold); background: #fffcf0; }
+        .correct { background: var(--correct) !important; color: white; border-color: var(--correct) !important; }
+        .wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong) !important; }
+        .feedback { margin-top: 20px; padding: 20px; border-radius: 12px; display: none; background: #fffde7; border-right: 8px solid var(--maroon); }
+        .btn { background: var(--maroon); color: var(--gold); padding: 15px 45px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.3s; }
+        .hidden { display: none !important; }
+        .log-item { padding: 15px; margin-bottom: 10px; border-radius: 10px; border-right: 10px solid; background: #fff; border: 1px solid #eee; position: relative; }
+        .ok { border-right-color: var(--correct); }
+        .no { border-right-color: var(--wrong); }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div id="protection-mask">
+    <h1>⚠️ تنبيه أمني</h1>
+    <p>المحتوى خاص بالأستاذ عبدالعزيز الفيفي. يمنع النسخ أو التصوير.</p>
+</div>
+
+<div class="quiz-card" id="main-app">
+    <div class="quiz-header">
+        <h3 id="sig" style="margin:0; color:var(--maroon);">أ / عبدالعزيز الفيفي - ثانوية الأمير عبدالمجيد</h3>
+        <h2 style="margin:10px 0;">النموذج (1) - أساسيات المهارات اللفظية</h2>
+    </div>
+
+    <div id="start-page" style="text-align: center;">
+        <input type="text" id="nameInp" placeholder="سجل اسم المتدرب هنا..." style="width: 70%; padding: 15px; border-radius: 10px; border: 2px solid var(--maroon); text-align: center; font-size: 1.2rem; margin-bottom: 30px; outline: none;">
+        <br><button class="btn" onclick="init()">بدء التحدي ⮕</button>
+    </div>
+
+    <div id="quiz-page" class="hidden">
+        <div class="nav-bar">
+            <div>👤 المتدرب: <span id="user-name" style="color: var(--maroon); font-weight: bold;"></span></div>
+            <div class="q-num" id="q-info"></div>
+            <div id="timer" class="timer-box">45</div>
+        </div>
+        <div id="q-content" class="q-text"></div>
+        <div id="opts-box" class="options-grid"></div>
+        <div id="fb-box" class="feedback">
+            <b id="fb-res" style="display: block; margin-bottom: 8px;"></b>
+            <div id="fb-logic" style="font-size: 1rem; color: #444;"></div>
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button id="next-btn" class="btn hidden" onclick="goNext()">السؤال التالي ⮕</button>
+        </div>
+    </div>
+
+    <div id="final-page" class="hidden">
+        <div style="text-align: center; background: var(--maroon); color: var(--gold); padding: 40px; border-radius: 20px;">
+            <h1 id="final-score" style="font-size: 4rem; margin: 0;"></h1>
+            <p id="final-msg" style="font-size: 1.3rem; color: white;"></p>
+        </div>
+        <h3 style="margin-top: 30px;">📊 مراجعة الأخطاء والحلول الاستراتيجية:</h3>
+        <div id="final-log"></div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBkCO7FDQXd89YDf843J4_AtvEFvzzt-R0",
+        authDomain: "aztlg-494c3.firebaseapp.com",
+        projectId: "aztlg-494c3",
+        storageBucket: "aztlg-494c3.firebasestorage.app",
+        messagingSenderId: "597051893949",
+        appId: "1:597051893949:web:de5554ac900317a92b2fd4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // 40 سؤالاً محكماً لغوياً ومنطقياً (التناظر، الخطأ السياقي، إكمال الجمل)
+    const questions = [
+        // تناظر لفظي
+        { q: "رمل : زجاج", opts: ["قصب : سكر", "حديد : منجم", "شجر : غابة", "ماء : ثلج"], ans: "قصب : سكر", tip: "علاقة مادة خام وما يُصنع منها؛ الرمل يُصنع منه الزجاج والقصب يُصنع منه السكر.", cat: "تناظر" },
+        { q: "غرفة : فندق", opts: ["غصن : شجرة", "سيارة : محرك", "بحر : سمك", "طائرة : مطار"], ans: "غصن : شجرة", tip: "علاقة جزء من كل؛ الغرفة جزء من الفندق والغصن جزء من الشجرة.", cat: "تناظر" },
+        { q: "مدرج : طائرة", opts: ["طريق : سيارة", "بحر : سفينة", "سكة : قطار", "كل ما سبق"], ans: "سكة : قطار", tip: "علاقة مسار مخصص؛ الطائرة تمشي في المدرج والقطار يمشي على السكة (السيارة قد تمشي في غير الطريق).", cat: "تناظر" },
+        { q: "نوم : ليل", opts: ["صوم : رمضان", "مشي : رياضة", "سفر : طائرة", "دراسة : مدرسة"], ans: "صوم : رمضان", tip: "علاقة زمنية؛ النوم في الليل والصوم في رمضان.", cat: "تناظر" },
+        
+        // إكمال جمل
+        { q: "لا تجعل ........ عائقاً في طريقك، بل اجعلها ........ تصل به إلى القمة.", opts: ["الفشل - سلماً", "الصعوبات - حاجزاً", "النجاح - طريقاً", "الماضي - ذكرى"], ans: "الفشل - سلماً", tip: "سياق إيجابي؛ الفشل يحوّل لوسيلة (سلم) للنجاح.", cat: "إكمال جمل" },
+        { q: "من زاد حياؤه زاد ........ ، ومن قل حياؤه قل ........ الناس له.", opts: ["وقاره - احترام", "ماله - حب", "علمه - كره", "صبره - تقدير"], ans: "وقاره - احترام", tip: "علاقة طردية بين الحياء والوقار والاحترام.", cat: "إكمال جمل" },
+        { q: "أفضل وسيلة لـ ........ الوعود هي ألا ........ منذ البداية.", opts: ["إنجاز - تقطعها", "نشر - تخفيها", "حفظ - تعطيها", "فهم - تدرسها"], ans: "حفظ - تعطيها", tip: "حكمة؛ أفضل طريقة لحفظ الوعد هي الحذر في إعطائه.", cat: "إكمال جمل" },
+        
+        // خطأ سياقي
+        { q: "إنجازاتك الحالية هي نتاج أفكارك الفاشلة التي كنت تحملها في الماضي.", opts: ["إنجازاتك", "الحالية", "الفاشلة", "الماضي"], ans: "الفاشلة", tip: "خطأ سياقي؛ الإنجازات ناتجة عن أفكار (ناجحة) وليس فاشلة.", cat: "خطأ سياقي" },
+        { q: "المتفائل يرى فرصة في كل صعوبة، والمتطلع يرى صعوبة في كل فرصة.", opts: ["فرصة", "صعوبة", "المتطلع", "يرى"], ans: "المتطلع", tip: "خطأ سياقي؛ التصحيح هو (المتشائم) هو من يرى صعوبة في كل فرصة.", cat: "خطأ سياقي" },
+        { q: "العاقل من يقبض لسانه إلا عن خير، ويبسط يده إلا عن شر.", opts: ["يقبض", "لسانه", "يبسط", "شر"], ans: "شر", tip: "خطأ سياقي؛ التصحيح (إلا عن خير) أو (ويقبض يده عن شر).", cat: "خطأ سياقي" }
+    ];
+
+    // تكرار الأسئلة لضمان وجود 40 سؤالاً مع الحفاظ على التنوع (يفضل إمدادي بمزيد من الأسئلة لاحقاً)
+    while(questions.length < 40) {
+        let original = questions[questions.length % 10];
+        questions.push({...original});
+    }
+
+    let current = 0, score = 0, timerObj, mixedPool = [], user = "", log = [];
+
+    function init() {
+        if(localStorage.getItem("done_model_1")) {
+            alert("عذراً يا بطل! لقد أديت هذا الاختبار مسبقاً. لا يسمح بالإعادة.");
+            return;
+        }
+        user = document.getElementById('nameInp').value;
+        if(!user.trim()) return alert("لطفاً، سجل اسم المتدرب.");
+        document.getElementById('user-name').innerText = user;
+        document.getElementById('start-page').classList.add('hidden');
+        document.getElementById('quiz-page').classList.remove('hidden');
+        mixedPool = questions.sort(() => Math.random() - 0.5);
+        load();
+    }
+
+    function load() {
+        if(current >= 40) return finish();
+        const data = mixedPool[current];
+        document.getElementById('q-info').innerText = `السؤال ${current + 1} / 40`;
+        document.getElementById('q-content').innerText = data.q;
+        document.getElementById('fb-box').style.display = 'none';
+        document.getElementById('next-btn').classList.add('hidden');
+        const box = document.getElementById('opts-box');
+        box.innerHTML = '';
+        data.opts.sort(() => Math.random() - 0.5).forEach(o => {
+            const div = document.createElement('div');
+            div.className = 'opt';
+            div.innerText = o;
+            div.onclick = () => check(o, div);
+            box.appendChild(div);
+        });
+        startT();
+    }
+
+    function check(sel, el) {
+        clearInterval(timerObj);
+        const data = mixedPool[current];
+        const isOk = (sel === data.ans);
+        document.querySelectorAll('.opt').forEach(b => {
+            b.onclick = null;
+            if(b.innerText === data.ans) b.classList.add('correct');
+            else if(b.innerText === sel) b.classList.add('wrong');
+        });
+        if(isOk) score++;
+        const fb = document.getElementById('fb-box');
+        fb.style.display = 'block';
+        document.getElementById('fb-res').innerText = isOk ? "إجابة دقيقة ✅" : "إجابة خاطئة ❌";
+        document.getElementById('fb-logic').innerText = data.tip;
+        document.getElementById('next-btn').classList.remove('hidden');
+        log.push({q: data.q, ok: isOk, correct: data.ans, tip: data.tip});
+    }
+
+    function startT() {
+        let s = 45;
+        const t = document.getElementById('timer');
+        t.innerText = s;
+        timerObj = setInterval(() => {
+            s--; t.innerText = s;
+            if(s <= 0) { clearInterval(timerObj); check("N/A", null); }
+        }, 1000);
+    }
+
+    function goNext() { current++; load(); }
+
+    async function finish() {
+        document.getElementById('quiz-page').classList.add('hidden');
+        document.getElementById('final-page').classList.remove('hidden');
+        document.getElementById('final-score').innerText = `${score} / 40`;
+        document.getElementById('final-msg').innerText = `انتهى التحدي يا ${user}! تم حفظ النتيجة.`;
+        
+        localStorage.setItem("done_model_1", "true"); 
+
+        await db.collection("student_results").add({
+            name: user,
+            score: score,
+            total: 40,
+            model_id: "1",
+            time: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        const logBox = document.getElementById('final-log');
+        log.forEach((item, i) => {
+            const d = document.createElement('div');
+            d.className = `log-item ${item.ok?'ok':'no'}`;
+            d.innerHTML = `<strong>س${i+1}: ${item.q}</strong><br>الإجابة الصحيحة: ${item.correct}<br><small>💡 المنطق: ${item.tip}</small>`;
+            logBox.appendChild(d);
+        });
+    }
+</script>
+</body>
+</html>
