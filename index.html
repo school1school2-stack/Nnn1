@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نموذج (1) - حماية فائقة - أ/ عبدالعزيز الفيفي</title>
+    <title>محاكي القدرات اللفظي - أ/ عبدالعزيز الفيفي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
@@ -13,14 +13,19 @@
         .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 20px; padding-bottom: 10px; }
         .input-group { margin: 15px auto; width: 85%; text-align: right; }
         input, select { width: 100%; padding: 14px; border-radius: 8px; border: 1.5px solid #ccc; font-size: 1.1rem; outline: none; box-sizing: border-box; background: #fff; margin-bottom: 10px; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; background: #f4f4f4; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; }
+        .q-section-tag { color: var(--maroon); font-weight: bold; font-size: 1rem; margin-bottom: 10px; display: block; text-align: right; border-right: 4px solid var(--gold); padding-right: 10px; }
+        .q-text { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 30px; line-height: 1.8; color: #222; min-height: 50px; }
+        .reading-box { background: #fff9e6; border: 1.5px solid #f0e68c; padding: 20px; border-radius: 12px; margin-bottom: 20px; line-height: 1.8; font-size: 1.1rem; text-align: justify; color: #333; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .opt { padding: 18px; border: 2px solid #ececec; border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: center; font-size: 1.2rem; background: #fff; font-weight: 600; }
+        .opt:hover { border-color: var(--gold); background: #fffcf0; }
+        .correct { background: var(--correct) !important; color: white; border-color: var(--correct) !important; }
+        .wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong) !important; }
         .btn { background: var(--maroon); color: var(--gold); padding: 14px 50px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
         .hidden { display: none !important; }
-        .q-text { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 30px; line-height: 1.8; color: #222; }
-        .opt { padding: 18px; border: 2px solid #ececec; border-radius: 12px; cursor: pointer; text-align: center; font-size: 1.2rem; background: #fff; margin-bottom: 10px; font-weight: 600; }
-        .correct { background: var(--correct) !important; color: white; }
-        .wrong { background: var(--wrong) !important; color: white; }
-        .fb-box { margin-top: 20px; padding: 20px; background: #f0f4ff; border-right: 8px solid var(--gold); border-radius: 8px; display: none; }
-        .reading-text { background-color: #fffde7; border: 1px solid #fff59d; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 1.1rem; }
+        #timer { color: var(--maroon); font-size: 1.6rem; font-weight: 800; border: 2px solid var(--gold); padding: 5px 15px; border-radius: 50px; }
+        .fb-box { margin-top: 20px; padding: 20px; background: #f0f4ff; border-right: 8px solid var(--gold); border-radius: 8px; line-height: 1.8; display: none; color: #1a237e; white-space: pre-line; }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -28,15 +33,8 @@
 <div class="quiz-card">
     <div class="header">
         <h3 style="margin:0; color:var(--maroon);">أ / عبدالعزيز الفيفي ✨</h3>
-        <h2 style="margin:5px 0;">محاكي القدرات - نموذج (1)</h2>
-        <p style="margin:0; color:var(--gold); font-weight:bold;">ثانوية الأمير عبدالمجيد 😊</p>
-    </div>
-
-    <!-- رسالة المنع المشددة -->
-    <div id="blocked-page" class="hidden" style="text-align: center; padding: 50px;">
-        <h2 style="color: var(--wrong);">نظام الحماية 🛡️</h2>
-        <p style="font-size: 1.3rem;">عذراً، تم تسجيل دخول مسبق لهذا الاسم أو من هذا الجهاز.</p>
-        <p>لا يُسمح بإعادة الاختبار لضمان دقة النتائج والعدالة.</p>
+        <h2 style="margin:5px 0;">محاكي القدرات اللفظي 2026 - <span id="model-title">نموذج (1)</span></h2>
+        <p style="margin:0; color:var(--gold); font-weight:bold;">ثانوية الأمير عبدالمجيد 🎓</p>
     </div>
 
     <div id="start-page" style="text-align: center;">
@@ -48,27 +46,40 @@
                 <option value="ثاني ثانوي">ثاني ثانوي</option>
                 <option value="ثالث ثانوي">ثالث ثانوي</option>
             </select>
-            <select id="studentClass" class="hidden"><option value="">-- اختر الفصل --</option></select>
+            <select id="studentClass" class="hidden">
+                <option value="">-- اختر الفصل --</option>
+            </select>
         </div>
-        <button id="check-btn" class="btn" onclick="validateAndStart()">التحقق والدخول 🚀</button>
+        <button id="start-btn" class="btn" onclick="checkDoubleEntry()">التحقق وبدء الاختبار 🚀</button>
     </div>
 
     <div id="quiz-page" class="hidden">
-        <!-- (هنا كود صفحة الاختبار والأسئلة كما هو في الكود السابق) -->
+        <div class="nav-bar">
+            <div id="q-counter" style="font-weight: bold;"></div>
+            <div id="timer">45</div>
+        </div>
+        <span id="question-category" class="q-section-tag"></span>
+        <div id="reading-container" class="reading-box hidden"></div>
+        <div id="question-text" class="q-text"></div>
+        <div id="options-area" class="options-grid"></div>
+        <div id="feedback-area" class="fb-box"></div>
+        <div style="text-align: center; margin-top: 25px;">
+            <button id="next-btn" class="btn hidden" onclick="nextQuestion()">السؤال التالي ⮕</button>
+        </div>
     </div>
 
     <div id="result-page" class="hidden" style="text-align: center;">
         <h2 style="color: var(--maroon);">النتيجة النهائية</h2>
         <div style="font-size: 4rem; font-weight: bold; margin: 20px 0; color: var(--gold);" id="score-text"></div>
-        <p id="cloud-msg"></p>
+        <p id="cloud-msg" style="font-size: 1.1rem; color: #555;"></p>
         <button class="btn" onclick="location.reload()">إغلاق</button>
     </div>
 </div>
 
 <script>
-    const MODEL_ID = "model_01"; 
-    // بصمة الجهاز (Fingerprint) تعتمد على خصائص الشاشة والمتصفح لتمييز الجهاز حتى لو تغير المتصفح
-    const DEVICE_ID = btoa(navigator.userAgent + screen.width + screen.height + navigator.language);
+    const currentModelId = "model_1"; 
+    const modelDisplayName = "نموذج (1)"; 
+    document.getElementById('model-title').innerText = modelDisplayName;
 
     const firebaseConfig = {
         apiKey: "AIzaSyBkCO7FDQXd89YDf843J4_AtvEFvzzt-R0",
@@ -81,62 +92,208 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // وظيفة التحقق المشددة قبل البدء
-    async function validateAndStart() {
-        const name = document.getElementById('studentName').value.trim();
-        const sClass = document.getElementById('studentClass').value;
-
-        if (name.split(' ').length < 3) return alert("يرجى كتابة الاسم الثلاثي الحقيقي.");
-        if (!sClass) return alert("يرجى اختيار المرحلة والفصل.");
-
-        document.getElementById('check-btn').innerText = "جاري التحقق من أمان الجهاز...";
-        document.getElementById('check-btn').disabled = true;
-
-        try {
-            // 1. التحقق من قاعدة البيانات بالاسم والفصل (لمنع دخول نفس الطالب من جهاز آخر)
-            const nameCheck = await db.collection("student_results")
-                .where("name", "==", name)
-                .where("student_class", "==", sClass)
-                .where("model_id", "==", MODEL_ID)
-                .get();
-
-            // 2. التحقق من قاعدة البيانات ببصمة الجهاز (لمنع دخول نفس الجهاز باسم مختلف)
-            const deviceCheck = await db.collection("student_results")
-                .where("device_id", "==", DEVICE_ID)
-                .where("model_id", "==", MODEL_ID)
-                .get();
-
-            if (!nameCheck.empty || !deviceCheck.empty || localStorage.getItem("done_" + MODEL_ID)) {
-                showBlocked();
-                return;
+    function updateClasses() {
+        const stage = document.getElementById('stageSelect').value;
+        const classSelect = document.getElementById('studentClass');
+        classSelect.innerHTML = '<option value="">-- اختر الفصل --</option>';
+        if (stage) {
+            classSelect.classList.remove('hidden');
+            for (let i = 1; i <= 6; i++) {
+                const opt = document.createElement('option');
+                opt.value = `${stage} - ${i}`;
+                opt.innerText = `فصل ${i}`;
+                classSelect.appendChild(opt);
             }
-
-            // إذا كان كل شيء سليم، نبدأ الاختبار
-            startQuiz();
-        } catch (e) {
-            console.error(e);
-            alert("حدث خطأ في الاتصال بالسحابة.");
+        } else {
+            classSelect.classList.add('hidden');
         }
     }
 
-    function showBlocked() {
-        document.getElementById('start-page').classList.add('hidden');
-        document.getElementById('blocked-page').classList.remove('hidden');
+    async function checkDoubleEntry() {
+        const nameInput = document.getElementById('studentName').value.trim();
+        const classInput = document.getElementById('studentClass').value;
+        if(nameInput.split(' ').length < 3) return alert("يرجى كتابة الاسم الثلاثي.");
+        if(!classInput) return alert("يرجى اختيار الفصل.");
+
+        const btn = document.getElementById('start-btn');
+        btn.innerText = "جاري التحقق سحابياً... ⏳";
+        btn.disabled = true;
+
+        try {
+            const snapshot = await db.collection("student_results")
+                .where("name", "==", nameInput)
+                .where("model_id", "==", currentModelId)
+                .get();
+
+            if (!snapshot.empty || localStorage.getItem('taken_' + currentModelId)) {
+                alert("عذراً " + nameInput + "، لقد أديت الاختبار مسبقاً. لا يسمح بالإعادة.");
+                location.reload();
+            } else {
+                startQuiz(nameInput, classInput);
+            }
+        } catch (e) { startQuiz(nameInput, classInput); }
     }
 
-    function startQuiz() {
+    const quizData = [
+        // 1-10: تناظر لفظي
+        { cat: "التناظر اللفظي", q: "رئة : تنفس", opts: ["قلب : ضخ", "معدة : طعام", "عين : ضوء", "يد : لمس"], ans: "قلب : ضخ", tip: "أ / عبدالعزيز الفيفي 🎓\nعضو ووظيفته." },
+        { cat: "التناظر اللفظي", q: "سعف : نخلة", opts: ["ريش : طائر", "شعر : رأس", "وبر : ناقة", "جلد : حيوان"], ans: "ريش : طائر", tip: "أ / عبدالعزيز الفيفي 🎓\nغطاء طبيعي." },
+        { cat: "التناظر اللفظي", q: "غابة : أشجار", opts: ["مكتبة : كتب", "بحر : سمك", "فصل : طلاب", "قرية : بيوت"], ans: "مكتبة : كتب", tip: "أ / عبدالعزيز الفيفي 🎓\nمكان واحتواء." },
+        { cat: "التناظر اللفظي", q: "منشار : خشب", opts: ["مقص : قماش", "مبرد : حديد", "سكين : لحم", "قلم : ورقة"], ans: "مقص : قماش", tip: "أ / عبدالعزيز الفيفي 🎓\nأداة وما تقطعه." },
+        { cat: "التناظر اللفظي", q: "بؤس : شقاء", opts: ["غنى : ثراء", "حزن : كدر", "فرح : سرور", "خوف : قلق"], ans: "غنى : ثراء", tip: "أ / عبدالعزيز الفيفي 🎓\nترادف." },
+        { cat: "التناظر اللفظي", q: "نوم : ليل", opts: ["صوم : رمضان", "صلاة : مسجد", "دراسة : مدرسة", "حج : مكة"], ans: "صوم : رمضان", tip: "أ / عبدالعزيز الفيفي 🎓\nارتباط زماني." },
+        { cat: "التناظر اللفظي", q: "مطار : طائرة", opts: ["ميناء : سفينة", "محطة : ركاب", "موقف : زحام", "طريق : سيارة"], ans: "ميناء : سفينة", tip: "أ / عبدالعزيز الفيفي 🎓\nمكان الانطلاق." },
+        { cat: "التناظر اللفظي", q: "غزال : رشا", opts: ["نمر : هِر", "أسد : ضرغام", "خيل : صهيل", "فيل : خرطوم"], ans: "أسد : ضرغام", tip: "أ / عبدالعزيز الفيفي 🎓\nالاسم ومرادفه." },
+        { cat: "التناظر اللفظي", q: "بصر : عين", opts: ["شم : أنف", "لمس : حرارة", "تذوق : لسان", "سمع : أذن"], ans: "سمع : أذن", tip: "أ / عبدالعزيز الفيفي 🎓\nحاسة وعضوها." },
+        { cat: "التناظر اللفظي", q: "محراب : مسجد", opts: ["نصل : سيف", "قبة : سماء", "منبر : خطيب", "شاطئ : بحر"], ans: "نصل : سيف", tip: "أ / عبدالعزيز الفيفي 🎓\nجزء من كل." },
+
+        // 11-20: إكمال جمل
+        { cat: "إكمال الجمل", q: "إن المعلومات التي يحصل عليها الطفل في السنين الأولى تبقى ...... في ذهنه.", opts: ["راسخة", "عابرة", "مهمشة", "منسية"], ans: "راسخة", tip: "أ / عبدالعزيز الفيفي 🎓\nالتعلم في الصغر." },
+        { cat: "إكمال الجمل", q: "من لم يتعلم من ...... الماضي، فلن يستطيع ...... المستقبل.", opts: ["تجارب - بناء", "أخطاء - نسيان", "قصص - تجاهل", "نجاح - تخيل"], ans: "تجارب - بناء", tip: "أ / عبدالعزيز الفيفي 🎓\nالاستفادة من الماضي." },
+        { cat: "إكمال الجمل", q: "الكريم هو الذي ...... من نفسه قبل أن ...... منه الآخرون.", opts: ["يعطي - يطلب", "يأخذ - يعطي", "يسأل - يأخذ", "يبخل - يطلب"], ans: "يعطي - يطلب", tip: "أ / عبدالعزيز الفيفي 🎓\nالمبادرة بالعطاء." },
+        { cat: "إكمال الجمل", q: "تعد القراءة من أهم وسائل ...... الثقافي بين الشعوب.", opts: ["التواصل", "التنافر", "التباعد", "الخلاف"], ans: "التواصل", tip: "أ / عبدالعزيز الفيفي 🎓\nجسور المعرفة." },
+        { cat: "إكمال الجمل", q: "الابتسامة طريق ...... للوصول إلى قلوب الآخرين.", opts: ["مختصر", "وعر", "مغلق", "طويل"], ans: "مختصر", tip: "أ / عبدالعزيز الفيفي 🎓\nأقصر طريق للقلب." },
+        { cat: "إكمال الجمل", q: "لا تجعل عوائق الماضي ...... عتبات المستقبل.", opts: ["تكسر", "تبني", "ترفع", "تزين"], ans: "تكسر", tip: "أ / عبدالعزيز الفيفي 🎓\nعدم الالتفات للخلف." },
+        { cat: "إكمال الجمل", q: "من سعى في إصلاح شأن غيره، فقد أصلح ...... .", opts: ["شأنه", "بيته", "عمله", "ماله"], ans: "شأنه", tip: "أ / عبدالعزيز الفيفي 🎓\nالجزاء من جنس العمل." },
+        { cat: "إكمال الجمل", q: "العالم لا يعترف بالضعفاء، لذا يجب أن نكون ...... .", opts: ["أقوياء", "أغنياء", "فقراء", "ضعفاء"], ans: "أقوياء", tip: "أ / عبدالعزيز الفيفي 🎓\nلغة العصر." },
+        { cat: "إكمال الجمل", q: "الحكيم يضع الأمور في ...... الصحيحة.", opts: ["نصابها", "مكانها", "أوقاتها", "خاناتها"], ans: "نصابها", tip: "أ / عبدالعزيز الفيفي 🎓\nتعبير لغوي." },
+        { cat: "إكمال الجمل", q: "أبو جعفر المنصور هو المؤسس ...... للدولة العباسية.", opts: ["الحقيقي", "الأول", "الضعيف", "الأخير"], ans: "الحقيقي", tip: "أ / عبدالعزيز الفيفي 🎓\nتاريخياً." },
+
+        // 21-30: خطأ سياقي
+        { cat: "الخطأ السياقي", q: "صناعة الألعاب في اليابان بلغت ذروة الإخفاق في الآونة الأخيرة.", opts: ["ذروة", "اليابان", "الإخفاق", "الأخيرة"], ans: "الإخفاق", tip: "أ / عبدالعزيز الفيفي 🎓\nالصحيح: النجاح." },
+        { cat: "الخطأ السياقي", q: "المتفاؤل يرى فرصة في كل صعوبة، والمتشائم يرى صعوبة في كل منحة.", opts: ["المتفاؤل", "صعوبة", "المتشائم", "منحة"], ans: "منحة", tip: "أ / عبدالعزيز الفيفي 🎓\nالصحيح: فرصة." },
+        { cat: "الخطأ السياقي", q: "يجب علينا الدفاع عن الوطن في السلم، لأن ذلك من أسمى الغايات.", opts: ["الدفاع", "الوطن", "السلم", "الغايات"], ans: "السلم", tip: "أ / عبدالعزيز الفيفي 🎓\nالصحيح: الحرب." },
+        { cat: "الخطأ السياقي", q: "العظمة الحقيقية هي أن تفتخر بنجاحك أمام الضعفاء.", opts: ["العظمة", "تفتخر", "بنجاحك", "الضعفاء"], ans: "الضعفاء", tip: "أ / عبدالعزيز الفيفي 🎓\nالتواضع مطلوب." },
+        { cat: "الخطأ السياقي", q: "إذا كنت تريد النجاح، فعليك أن تسلك طريقاً ممهداً بالورود.", opts: ["تريد", "النجاح", "تسلك", "بالورود"], ans: "بالورود", tip: "أ / عبدالعزيز الفيفي 🎓\nالنجاح شاق." },
+        { cat: "الخطأ السياقي", q: "الشورى مبدأ إسلامي يهدف إلى تفرّد الحاكم بالرأي.", opts: ["الشورى", "مبدأ", "تفرّد", "بالرأي"], ans: "تفرّد", tip: "أ / عبدالعزيز الفيفي 🎓\nالشورى مشاركة." },
+        { cat: "الخطأ السياقي", q: "نظرة الجاهل لدنياه كنظرة العاقل لآخرته، كلاهما زاهد.", opts: ["الجاهل", "العاقل", "آخرته", "زاهد"], ans: "زاهد", tip: "أ / عبدالعزيز الفيفي 🎓\nالجاهل لا يزهد في الدنيا." },
+        { cat: "الخطأ السياقي", q: "إخوان الخير كشجر النار، يحرق بعضه بعضاً.", opts: ["الخير", "كشجر", "النار", "بعضه"], ans: "الخير", tip: "أ / عبدالعزيز الفيفي 🎓\nالصحيح: السوء." },
+        { cat: "الخطأ السياقي", q: "كن جواداً تغنم بمحبة الناس، وإياك والبخل فإنه رداء جميل.", opts: ["جواداً", "بمحبة", "والبخل", "جميل"], ans: "جميل", tip: "أ / عبدالعزيز الفيفي 🎓\nالبخل رداء قبيح." },
+        { cat: "الخطأ السياقي", q: "الفشل هو الشيء الوحيد الذي تستطيع أن تحققه بجهد كبير.", opts: ["الفشل", "تستطيع", "تحققه", "بجهد"], ans: "بجهد", tip: "أ / عبدالعزيز الفيفي 🎓\nالفشل لا يحتاج جهداً." },
+
+        // 31-35: استيعاب مقروء
+        { 
+            cat: "استيعاب المقروء", 
+            passage: "الذكاء الاصطناعي يهدف لتعزيز القدرات البشرية وتوفير الجهد والوقت، وليس وسيلة لإقصاء العقل البشري الذي يظل هو المبتكر والموجه الأول.",
+            q: "العلاقة بين البشر والذكاء الاصطناعي علاقة:", 
+            opts: ["تكاملية", "تضادية", "استبدالية", "عدائية"], 
+            ans: "تكاملية", 
+            tip: "أ / عبدالعزيز الفيفي 🎓\nالنص يدعم التكامل." 
+        },
+        { 
+            cat: "استيعاب المقروء", 
+            passage: "المياه الجوفية مخزون استراتيجي هائل في المناطق القاحلة، وتتطلب إدارة مستدامة لضمان عدم استنزافها لأن تعويضها يستغرق آلاف السنين.",
+            q: "يستغرق تعويض المياه الجوفية:", 
+            opts: ["وقتاً طويلاً", "شهوراً", "سنوات قليلة", "وقتاً قصيراً"], 
+            ans: "وقتاً طويلاً", 
+            tip: "أ / عبدالعزيز الفيفي 🎓\n'آلاف السنين' وقت طويل." 
+        },
+        { 
+            cat: "استيعاب المقروء", 
+            passage: "التنوع البيولوجي حجر الزاوية لاستقرار النظم البيئية، وانقراض فصيلة واحدة قد يؤدي إلى اختلال السلسلة الغذائية بالكامل.",
+            q: "أنسب عنوان للنص:", 
+            opts: ["أهمية التنوع", "أسباب الانقراض", "السلسلة الغذائية", "النظم البيئية"], 
+            ans: "أهمية التنوع", 
+            tip: "أ / عبدالعزيز الفيفي 🎓\nالنص يركز على قيمة التنوع." 
+        },
+        { 
+            cat: "استيعاب المقروء", 
+            passage: "اللغة العربية تمتاز بسعة مفرداتها ودقة تعبيراتها، وهي وعاء الفكر والحضارة الإسلامية عبر العصور.",
+            q: "وصف النص اللغة العربية بأنها:", 
+            opts: ["ثرية", "محدودة", "جامدة", "حديثة"], 
+            ans: "ثرية", 
+            tip: "أ / عبدالعزيز الفيفي 🎓\n'سعة المفردات' تعني الثراء." 
+        },
+        { 
+            cat: "استيعاب المقروء", 
+            passage: "العمل التطوعي يعزز الانتماء الوطني ويسهم في بناء شخصية الفرد وتنمية مهاراته الاجتماعية.",
+            q: "يستفيد المتطوع من عمله بـ:", 
+            opts: ["تطوير ذاته", "كسب المال", "الشهرة", "الراحة"], 
+            ans: "تطوير ذاته", 
+            tip: "أ / عبدالعزيز الفيفي 🎓\n'بناء الشخصية' تطوير للذات." 
+        },
+
+        // 36-40: مفردة شاذة
+        { cat: "المفردة الشاذة", q: "حدد المفردة الشاذة: (تفاح - برتقال - خيار - موز)", opts: ["تفاح", "برتقال", "خيار", "موز"], ans: "خيار", tip: "أ / عبدالعزيز الفيفي 🎓\nخضروات." },
+        { cat: "المفردة الشاذة", q: "حدد المفردة الشاذة: (مصر - السودان - تونس - نيجيريا)", opts: ["مصر", "السودان", "تونس", "نيجيريا"], ans: "نيجيريا", tip: "أ / عبدالعزيز الفيفي 🎓\nليست عربية." },
+        { cat: "المفردة الشاذة", q: "حدد المفردة الشاذة: (شجاعة - كرم - بخل - مروءة)", opts: ["شجاعة", "كرم", "بخل", "مروءة"], ans: "بخل", tip: "أ / عبدالعزيز الفيفي 🎓\nصفة ذميمة." },
+        { cat: "المفردة الشاذة", q: "حدد المفردة الشاذة: (فولاذ - نحاس - خشب - حديد)", opts: ["فولاذ", "نحاس", "خشب", "حديد"], ans: "خشب", tip: "أ / عبدالعزيز الفيفي 🎓\nليس معدناً." },
+        { cat: "المفردة الشاذة", q: "حدد المفردة الشاذة: (شمس - قمر - نجوم - غيوم)", opts: ["شمس", "قمر", "نجوم", "غيوم"], ans: "غيوم", tip: "أ / عبدالعزيز الفيفي 🎓\nليست جرماً سماوياً." }
+    ];
+
+    let currentIdx = 0, userScore = 0, timer, sName, sClass;
+
+    function startQuiz(name, cls) {
+        sName = name; sClass = cls;
         document.getElementById('start-page').classList.add('hidden');
         document.getElementById('quiz-page').classList.remove('hidden');
-        // (استدعاء وظيفة تحميل السؤال الأول)
+        loadQuestion();
     }
 
-    // إضافة بصمة الجهاز عند حفظ النتيجة النهائية
+    function loadQuestion() {
+        if(currentIdx >= quizData.length) return finishQuiz();
+        const data = quizData[currentIdx];
+        document.getElementById('q-counter').innerText = `السؤال ${currentIdx + 1} / ${quizData.length}`;
+        document.getElementById('question-category').innerText = `القسم: ${data.cat}`;
+        
+        const rc = document.getElementById('reading-container');
+        if(data.passage) { rc.innerText = data.passage; rc.classList.remove('hidden'); }
+        else { rc.classList.add('hidden'); }
+
+        document.getElementById('question-text').innerText = data.q;
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('feedback-area').style.display = 'none';
+        
+        const box = document.getElementById('options-area');
+        box.innerHTML = '';
+        [...data.opts].sort(() => Math.random() - 0.5).forEach(o => {
+            const d = document.createElement('div');
+            d.className = 'opt'; d.innerText = o;
+            d.onclick = () => check(o, d);
+            box.appendChild(d);
+        });
+        startTimer();
+    }
+
+    function check(sel, el) {
+        clearInterval(timer);
+        const correctAns = quizData[currentIdx].ans;
+        if(sel === correctAns) userScore++;
+        document.querySelectorAll('.opt').forEach(opt => {
+            opt.onclick = null;
+            if(opt.innerText === correctAns) opt.classList.add('correct');
+            else if(opt.innerText === sel) opt.classList.add('wrong');
+        });
+        const fbArea = document.getElementById('feedback-area');
+        fbArea.innerText = quizData[currentIdx].tip;
+        fbArea.style.display = 'block';
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function startTimer() {
+        let s = 45; document.getElementById('timer').innerText = s;
+        clearInterval(timer);
+        timer = setInterval(() => {
+            s--; document.getElementById('timer').innerText = s;
+            if(s <= 0) { clearInterval(timer); check("N/A", null); }
+        }, 1000);
+    }
+
+    function nextQuestion() { currentIdx++; loadQuestion(); }
+
     async function finishQuiz() {
-        localStorage.setItem("done_" + MODEL_ID, "true"); 
-        // (كود حفظ النتيجة في Firebase مع إضافة حقل device_id: DEVICE_ID)
+        document.getElementById('quiz-page').classList.add('hidden');
+        document.getElementById('result-page').classList.remove('hidden');
+        document.getElementById('score-text').innerText = `${userScore} / ${quizData.length}`;
+        localStorage.setItem('taken_' + currentModelId, 'true');
+        try {
+            await db.collection("student_results").add({
+                name: sName, student_class: sClass, score: userScore, total: quizData.length, model_id: currentModelId,
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById('cloud-msg').innerText = "✅ تم حفظ النتيجة بنجاح يا " + sName;
+        } catch(e) { console.error(e); }
     }
-
-    // بقية كود تحديث الفصول والأسئلة يوضع هنا...
 </script>
 </body>
 </html>
