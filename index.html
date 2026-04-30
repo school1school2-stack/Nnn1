@@ -6,24 +6,133 @@
     <title>النموذج (21) المطور - أ/ عبدالعزيز الفيفي</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
     <style>
-        :root { --maroon: #800000; --gold: #d4af37; --bg: #fdfaf1; --white: #ffffff; --correct: #2e7d32; --wrong: #c62828; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; margin: 0; }
-        .quiz-card { background: var(--white); width: 100%; max-width: 900px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid var(--maroon); padding: 30px; position: relative; }
-        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 20px; padding-bottom: 10px; }
-        .input-group { margin: 15px auto; width: 85%; text-align: right; }
-        input, select { width: 100%; padding: 14px; border-radius: 8px; border: 1.5px solid #ccc; font-size: 1.1rem; outline: none; box-sizing: border-box; background: #fff; margin-bottom: 10px; }
-        .nav-bar { display: flex; justify-content: space-between; align-items: center; background: #f4f4f4; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; }
-        .q-text { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 30px; line-height: 1.8; color: #222; min-height: 80px; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .opt { padding: 18px; border: 2px solid #ececec; border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: center; font-size: 1.2rem; background: #fff; font-weight: 600; }
-        .opt:hover { border-color: var(--gold); background: #fffcf0; }
-        .correct { background: var(--correct) !important; color: white; border-color: var(--correct) !important; }
-        .wrong { background: var(--wrong) !important; color: white; border-color: var(--wrong) !important; }
-        .btn { background: var(--maroon); color: var(--gold); padding: 14px 50px; border: none; border-radius: 10px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+        :root { 
+            --maroon: #800000;
+            --gold: #d4af37; 
+            --bg: #fdfaf1; 
+            --white: #ffffff; 
+            --correct: #2e7d32; 
+            --wrong: #c62828;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: var(--bg); 
+            display: flex;
+            justify-content: center; 
+            padding: 20px; 
+            margin: 0; 
+        }
+        .quiz-card { 
+            background: var(--white); 
+            width: 100%;
+            max-width: 900px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            border-top: 10px solid var(--maroon); 
+            padding: 30px; 
+            position: relative;
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 2px solid var(--gold); 
+            margin-bottom: 20px; 
+            padding-bottom: 10px;
+        }
+        .input-group { 
+            margin: 15px auto; 
+            width: 85%; 
+            text-align: right;
+        }
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px;
+            border: 1.5px solid #ccc; 
+            font-size: 1.1rem; 
+            outline: none; 
+            box-sizing: border-box; 
+            background: #fff; 
+            margin-bottom: 10px;
+        }
+        .nav-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #f4f4f4;
+            padding: 12px 20px; 
+            border-radius: 10px; 
+            margin-bottom: 20px; 
+        }
+        .q-text { 
+            font-size: 1.4rem;
+            font-weight: bold; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            line-height: 1.8; 
+            color: #222; 
+            min-height: 80px;
+        }
+        .options-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px;
+        }
+        .opt { 
+            padding: 18px; 
+            border: 2px solid #ececec; 
+            border-radius: 12px; 
+            cursor: pointer;
+            transition: 0.2s; 
+            text-align: center; 
+            font-size: 1.2rem; 
+            background: #fff; 
+            font-weight: 600;
+        }
+        .opt:hover { 
+            border-color: var(--gold); 
+            background: #fffcf0;
+        }
+        .correct { 
+            background: var(--correct) !important; 
+            color: white; 
+            border-color: var(--correct) !important;
+        }
+        .wrong { 
+            background: var(--wrong) !important; 
+            color: white; 
+            border-color: var(--wrong) !important;
+        }
+        .btn { 
+            background: var(--maroon); 
+            color: var(--gold); 
+            padding: 14px 50px; 
+            border: none;
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+        }
         .hidden { display: none !important; }
-        #timer { color: var(--maroon); font-size: 1.6rem; font-weight: 800; border: 2px solid var(--gold); padding: 5px 15px; border-radius: 50px; }
-        .fb-box { margin-top: 20px; padding: 20px; background: #f0f4ff; border-right: 8px solid var(--gold); border-radius: 8px; line-height: 1.8; display: none; color: #1a237e; }
+        #timer { 
+            color: var(--maroon); 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            border: 2px solid var(--gold);
+            padding: 5px 15px; 
+            border-radius: 50px; 
+        }
+        .fb-box { 
+            margin-top: 20px; 
+            padding: 20px;
+            background: #f0f4ff; 
+            border-right: 8px solid var(--gold); 
+            border-radius: 8px; 
+            line-height: 1.8; 
+            display: none; 
+            color: #1a237e;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -36,10 +145,11 @@
     </div>
 
     <div id="start-page" style="text-align: center;">
-        <div class="input-group"><input type="text" id="studentName" placeholder="الاسم الثلاثي الحقيقي"></div>
+        <div class="input-group">
+            <input type="text" id="studentName" placeholder="الاسم الثلاثي الحقيقي">
+        </div>
         
         <div class="input-group">
-            <!-- قائمة اختيار المرحلة -->
             <select id="stageSelect" onchange="updateClasses()">
                 <option value="">-- اختر المرحلة الدراسية --</option>
                 <option value="أول ثانوي">أول ثانوي</option>
@@ -47,7 +157,6 @@
                 <option value="ثالث ثانوي">ثالث ثانوي</option>
             </select>
             
-            <!-- قائمة اختيار الفصل (تحدث برمجياً) -->
             <select id="studentClass" class="hidden">
                 <option value="">-- اختر الفصل --</option>
             </select>
@@ -78,7 +187,7 @@
 </div>
 
 <script>
-    // إعدادات Firebase الخاصة بك[cite: 5]
+    [span_2](start_span)// إعدادات Firebase الخاصة بك[span_2](end_span)
     const firebaseConfig = {
         apiKey: "AIzaSyBkCO7FDQXd89YDf843J4_AtvEFvzzt-R0",
         authDomain: "aztlg-494c3.firebaseapp.com",
@@ -88,20 +197,19 @@
         appId: "1:597051893949:web:de5554ac900317a92b2fd4"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    [span_3](start_span)const db = firebase.firestore();[span_3](end_span)
 
-    // دالة تحديث قائمة الفصول بناءً على المرحلة
+    [span_4](start_span)// تحديث قائمة الفصول بناءً على المرحلة[span_4](end_span)
     function updateClasses() {
         const stage = document.getElementById('stageSelect').value;
         const classSelect = document.getElementById('studentClass');
-        
         classSelect.innerHTML = '<option value="">-- اختر الفصل --</option>';
         
         if (stage) {
             classSelect.classList.remove('hidden');
-            for (let i = 1; i <= 6; i++) {
+            [span_5](start_span)for (let i = 1; i <= 6; i++) {[span_5](end_span)
                 const opt = document.createElement('option');
-                opt.value = `${stage} - ${i}`;
+                [span_6](start_span)opt.value = `${stage} - ${i}`;[span_6](end_span)
                 opt.innerText = `فصل ${i}`;
                 classSelect.appendChild(opt);
             }
@@ -110,91 +218,110 @@
         }
     }
 
+    [span_7](start_span)// بيانات الأسئلة[span_7](end_span)
     const quizData = [
-        { q: "زلازل : جيولوجيا", opts: ["نجوم : فلك", "نبات : كيمياء", "أرقام : هندسة", "ماء : رياح"], ans: "نجوم : فلك", tip: "💡 تحليل: العلاقة (ظاهرة طبيعية وعلم دراستها)؛ الزلازل تدرس في الجيولوجيا والنجوم في الفلك." },
-        { q: "يعد السكري من الأمراض ........ التي تتطلب تعايشاً معها.", opts: ["المزمنة", "المعدية", "العابرة", "البسيطة"], ans: "المزمنة", tip: "💡 تحليل: الأمراض التي تتطلب تعايشاً طويلاً هي الأمراض 'المزمنة'." },
-        { q: "الزلازل ظاهرة طبيعية لا يمكن منعها، لكن يمكن ........ من آثارها التدميرية.", opts: ["التقليل", "الزيادة", "تجاهل", "منع"], ans: "التقليل", tip: "💡 تحليل: الخيار المنطقي الوحيد لمواجهة ظاهرة لا تمنع هو 'التقليل' من أضرارها." },
-        { q: "رغم تطور العلم، إلا أن التنبؤ بوقوع الزلزال لا يزال أمراً مستحيلاً.", opts: ["مستحيلاً", "التنبؤ", "وقوع", "العلم"], ans: "مستحيلاً", tip: "💡 تحليل: تختبر هذه الجملة استيعاب الحقائق العلمية داخل سياق اللفظي." },
-        { q: "شبكية : عين", opts: ["غصن : شجرة", "غرفة : فندق", "فصل : مدرسة", "أذن : رأس"], ans: "غصن : شجرة", tip: "💡 تحليل: العلاقة (جزء من كل عضوي حي)؛ الشبكية من العين والغصن من الشجرة." },
-        { q: "يجب على مريض السكري تنظيم غذائه ليتجنب ........ المفاجئ في مستوى السكر.", opts: ["الارتفاع", "الانخفاض", "الثبات", "التوازن"], ans: "الارتفاع", tip: "💡 تحليل: 'الارتفاع' المفاجئ هو الخطر الصحي المباشر الذي يهدد مريض السكري." },
-        { q: "محطة : قطار", opts: ["ميناء : سفينة", "مطار : طيار", "موقف : ركاب", "طريق : سيارة"], ans: "ميناء : سفينة", tip: "💡 تحليل: العلاقة (مكان توقف رسمي لوسيلة النقل)؛ المحطة للقطار والميناء للسفينة." },
-        { q: "أبو جعفر المنصور هو المؤسس الحقيقي للدولة ........ .", opts: ["العباسية", "الأموية", "العثمانية", "الأيوبية"], ans: "العباسية", tip: "💡 تحليل: معلومة تاريخية؛ المنصور هو المؤسس الفعلي للدولة العباسية." },
-        { q: "ليمون : حمضيات", opts: ["خيار : خضروات", "تفاح : عصير", "تمر : نخل", "قمح : حقل"], ans: "خيار : خضروات", tip: "💡 تحليل: تصنيف الفرد ضمن فئته؛ الليمون حمضيات والخيار خضروات." },
-        { q: "رئة : تنفس", opts: ["معدة : هضم", "عين : إبصار", "أذن : سمع", "قلب : ضخ"], ans: "معدة : هضم", tip: "💡 تحليل: العضو ووظيفته الحيوية التحويلية (تحويل هواء/طعام)." }
+        [span_8](start_span){ q: "زلازل : جيولوجيا", opts: ["نجوم : فلك", "نبات : كيمياء", "أرقام : هندسة", "ماء : رياح"], ans: "نجوم : فلك", tip: "💡 تحليل: العلاقة (ظاهرة طبيعية وعلم دراستها)؛ الزلازل تدرس في الجيولوجيا والنجوم في الفلك."[span_8](end_span) },
+        [span_9](start_span){ q: "يعد السكري من الأمراض ........ التي تتطلب تعايشاً معها.", opts: ["المزمنة", "المعدية", "العابرة", "البسيطة"], ans: "المزمنة", tip: "💡 تحليل: الأمراض التي تتطلب تعايشاً طويلاً هي الأمراض 'المزمنة'."[span_9](end_span) },
+        [span_10](start_span){ q: "الزلازل ظاهرة طبيعية لا يمكن منعها، لكن يمكن ........ من آثارها التدميرية.", opts: ["التقليل", "الزيادة", "تجاهل", "منع"], ans: "التقليل", tip: "💡 تحليل: الخيار المنطقي الوحيد لمواجهة ظاهرة لا تمنع هو 'التقليل' من أضرارها."[span_10](end_span) },
+        [span_11](start_span){ q: "رغم تطور العلم، إلا أن التنبؤ بوقوع الزلزال لا يزال أمراً مستحيلاً.", opts: ["مستحيلاً", "التنبؤ", "وقوع", "العلم"], ans: "مستحيلاً", tip: "💡 تحليل: تختبر هذه الجملة استيعاب الحقائق العلمية داخل سياق اللفظي."[span_11](end_span) },
+        [span_12](start_span){ q: "شبكية : عين", opts: ["غصن : شجرة", "غرفة : فندق", "فصل : مدرسة", "أذن : رأس"], ans: "غصن : شجرة", tip: "💡 تحليل: العلاقة (جزء من كل عضوي حي)؛ الشبكية من العين والغصن من الشجرة."[span_12](end_span) },
+        [span_13](start_span){ q: "يجب على مريض السكري تنظيم غذائه ليتجنب ........ المفاجئ في مستوى السكر.", opts: ["الارتفاع", "الانخفاض", "الثبات", "التوازن"], ans: "الارتفاع", tip: "💡 تحليل: 'الارتفاع' المفاجئ هو الخطر الصحي المباشر الذي يهدد مريض السكري."[span_13](end_span) },
+        [span_14](start_span){ q: "محطة : قطار", opts: ["ميناء : سفينة", "مطار : طيار", "موقف : ركاب", "طريق : سيارة"], ans: "ميناء : سفينة", tip: "💡 تحليل: العلاقة (مكان توقف رسمي لوسيلة النقل)؛ المحطة للقطار والميناء للسفينة."[span_14](end_span) },
+        [span_15](start_span){ q: "أبو جعفر المنصور هو المؤسس الحقيقي للدولة ........ .", opts: ["العباسية", "الأموية", "العثمانية", "الأيوبية"], ans: "العباسية", tip: "💡 تحليل: معلومة تاريخية؛ المنصور هو المؤسس الفعلي للدولة العباسية."[span_15](end_span) },
+        [span_16](start_span){ q: "ليمون : حمضيات", opts: ["خيار : خضروات", "تفاح : عصير", "تمر : نخل", "قمح : حقل"], ans: "خيار : خضروات", tip: "💡 تحليل: تصنيف الفرد ضمن فئته؛ الليمون حمضيات والخيار خضروات."[span_16](end_span) },
+        [span_17](start_span){ q: "رئة : تنفس", opts: ["معدة : هضم", "عين : إبصار", "أذن : سمع", "قلب : ضخ"], ans: "معدة : هضم", tip: "💡 تحليل: العضو ووظيفته الحيوية التحويلية (تحويل هواء/طعام)."[span_17](end_span) }
     ];
 
-    // إكمال العدد لـ 40 سؤالاً للاختبار الشامل
-    while(quizData.length < 40) { quizData.push({...quizData[quizData.length % 10]}); }
+    [span_18](start_span)// إكمال العدد لـ 40 سؤالاً[span_18](end_span)
+    while(quizData.length < 40) { 
+        quizData.push({...quizData[quizData.length % 10]}); 
+    }
 
     let currentIdx = 0, userScore = 0, timer, sName, sClass;
 
-    function startQuiz() {
+    [span_19](start_span)function startQuiz() {[span_19](end_span)
         sName = document.getElementById('studentName').value.trim();
         sClass = document.getElementById('studentClass').value;
-        if(sName.split(' ').length < 3) return alert("يرجى كتابة الاسم الثلاثي الحقيقي.");
+        [span_20](start_span)if(sName.split(' ').length < 3) return alert("يرجى كتابة الاسم الثلاثي الحقيقي.");[span_20](end_span)
         if(!sClass) return alert("يرجى اختيار المرحلة والفصل.");
         document.getElementById('start-page').classList.add('hidden');
         document.getElementById('quiz-page').classList.remove('hidden');
-        loadQuestion();
+        [span_21](start_span)loadQuestion();[span_21](end_span)
     }
 
-    function loadQuestion() {
-        if(currentIdx >= 40) return finishQuiz();
+    [span_22](start_span)function loadQuestion() {[span_22](end_span)
+        [span_23](start_span)if(currentIdx >= 40) return finishQuiz();[span_23](end_span)
         const data = quizData[currentIdx];
         document.getElementById('q-counter').innerText = `السؤال ${currentIdx + 1} / 40`;
         document.getElementById('question-text').innerText = data.q;
         document.getElementById('next-btn').classList.add('hidden');
         document.getElementById('feedback-area').style.display = 'none';
+        
         const box = document.getElementById('options-area');
         box.innerHTML = '';
-        [...data.opts].sort(() => Math.random() - 0.5).forEach(o => {
+        [span_24](start_span)[...data.opts].sort(() => Math.random() - 0.5).forEach(o => {[span_24](end_span)
             const d = document.createElement('div');
             d.className = 'opt'; d.innerText = o;
             d.onclick = () => check(o, d);
             box.appendChild(d);
         });
-        startTimer();
+        [span_25](start_span)startTimer();[span_25](end_span)
     }
 
-    function check(sel, el) {
+    [span_26](start_span)function check(sel, el) {[span_26](end_span)
         clearInterval(timer);
-        const correctAns = quizData[currentIdx].ans;
+        [span_27](start_span)const correctAns = quizData[currentIdx].ans;[span_27](end_span)
         const tip = quizData[currentIdx].tip;
-        if(sel === correctAns) userScore++;
+        [span_28](start_span)if(sel === correctAns) userScore++;[span_28](end_span)
+        
         document.querySelectorAll('.opt').forEach(opt => {
             opt.onclick = null;
-            if(opt.innerText === correctAns) opt.classList.add('correct');
+            [span_29](start_span)if(opt.innerText === correctAns) opt.classList.add('correct');[span_29](end_span)
             else if(opt.innerText === sel) opt.classList.add('wrong');
         });
+        
         const fbArea = document.getElementById('feedback-area');
-        fbArea.innerHTML = tip;
+        [span_30](start_span)fbArea.innerHTML = tip;[span_30](end_span)
         fbArea.style.display = 'block';
         document.getElementById('next-btn').classList.remove('hidden');
     }
 
-    function startTimer() {
-        let s = 45; document.getElementById('timer').innerText = s;
+    [span_31](start_span)function startTimer() {[span_31](end_span)
+        let s = 45;
+        [span_32](start_span)document.getElementById('timer').innerText = s;[span_32](end_span)
         clearInterval(timer);
         timer = setInterval(() => {
-            s--; document.getElementById('timer').innerText = s;
-            if(s <= 0) { clearInterval(timer); check("N/A", null); }
-        }, 1000);
+            s--; 
+            document.getElementById('timer').innerText = s;
+            if(s <= 0) { 
+                clearInterval(timer); 
+                check("N/A", null); 
+            }
+        [span_33](start_span)}, 1000);[span_33](end_span)
     }
 
     function nextQuestion() { currentIdx++; loadQuestion(); }
 
     async function finishQuiz() {
-        document.getElementById('quiz-page').classList.add('hidden');
+        [span_34](start_span)document.getElementById('quiz-page').classList.add('hidden');[span_34](end_span)
         document.getElementById('result-page').classList.remove('hidden');
         document.getElementById('score-text').innerText = `${userScore} / 40`;
         document.getElementById('cloud-msg').innerText = "جاري حفظ النتيجة في السحابة لـ " + sName;
+        
         try {
-            await db.collection("student_results").add({
-                name: sName, student_class: sClass, score: userScore, total: 40, model_id: "21",
+            [span_35](start_span)await db.collection("student_results").add({[span_35](end_span)
+                name: sName, 
+                student_class: sClass, 
+                score: userScore, 
+                total: 40, 
+                model_id: "21",
                 time: firebase.firestore.FieldValue.serverTimestamp()
             });
             document.getElementById('cloud-msg').innerText = "✅ تم تسجيل النتيجة بنجاح في سجلات أ/ عبدالعزيز الفيفي";
-        } catch(e) { console.error(e); }
+        } catch(e) { 
+            console.error(e); 
+            document.getElementById('cloud-msg').innerText = "❌ حدث خطأ أثناء حفظ النتيجة.";
+        }
     }
 </script>
 </body>
